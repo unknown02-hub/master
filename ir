@@ -1,0 +1,367 @@
+### 1 - bitwise operates
+def bitwise(a, b):
+    print("------------------")
+    print("First number converted to binary:", bin(a))
+    print("Second number converted to binary:", bin(b))
+    print("------------------")
+
+    print("Let's Perform some operation on Numbers")
+    print("1. AND")
+    print("2. OR")
+    print("3. NOT for a")
+    print("4. NOT for b")
+
+    oper = int(input("Enter number to perform operation (1-4): "))
+
+    if oper == 1:
+        result = a & b
+        print("Bitwise AND operation:", a, "&", b, "=", result, "(", bin(result), ")")
+    elif oper == 2:
+        result = a | b
+        print("Bitwise OR operation:", a, "|", b, "=", result, "(", bin(result), ")")
+    elif oper == 3:
+        result = ~a
+        print("Bitwise NOT operation (a):", "~", a, "=", result, "(", bin(result), ")") 
+    
+    elif oper == 4:
+        	# NOT operation using bitwise ~ (inverts all bits)
+        result = ~b
+        print("Bitwise NOT operation (b):", "~", b, "=", result, "(", bin(result), ")")  # Corrected output for ~b
+    
+    else:
+        print("Invalid operation choice.")
+
+if __name__ == "__main__":
+    a = int(input("Enter 1st number: "))
+    b = int(input("Enter 2nd number: "))
+    bitwise(a, b)
+
+### 2 - page rank
+import numpy as np
+
+def page_rank(links,iterations=100,damping_factor=0.85):
+    num_pages = len(links)
+    matrix = np.zeros((num_pages,num_pages))
+    for i,link in enumerate(links):
+        if len(link)==0:
+            matrix[i] = np.ones(num_pages)/num_pages
+        else:
+            for j in link:
+                matrix[j][i] = 1/len(links)
+                scores = np.ones(num_pages)/(num_pages)
+
+    for i in range(iterations):
+        scores = (1-damping_factor)/num_pages+damping_factor*np.matmul(matrix,scores)
+        return scores
+
+num_pages = 4
+links = [[1,2],[0,3],[2,0],[0,1]]
+
+page_score = page_rank(links)
+
+for i,score in enumerate(page_score):
+    print(f"Page {i+1} score is : {score}")
+
+
+###3-edit distance
+
+def edit_distance(str1,str2):
+
+    m = len(str1)
+    n = len(str2)
+    dp =[[0]*(n+1) for _ in range(m+1)]
+
+    for i in range(m+1):
+        dp[i][0] = i
+    for j in range(n+1):
+        dp[0][j] = j
+
+    for i in range(1,m+1):
+        for j in range(1,n+1):
+            if str1[i-1] == str2[j-1]:
+                dp[i][j] = dp[i-1][j-1]
+            else:
+                dp[i][j] = 1 + min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1])
+    return dp[m][n]
+
+str1 = input("Enter string 1 :")
+str2 = input("Enter string 2 :")
+print(f"Edit distance between {str1} and {str2} is :",edit_distance(str1,str2))
+
+
+### 4 - similarity
+import math
+
+f1 = input("Enter File name 1 :")
+f2 = input("Enter File name 2 :")
+
+with open(f1,'r')as f:
+    f1 = f.read().lower().split()
+with open(f2,'r')as f:
+    f2 = f.read().lower().split()
+
+a1 = set(f1)
+a2 = set(f2)
+
+el_1 = sorted(list(a1))
+el_2 = sorted(list(a2.difference(a1)))
+
+el_1.extend(el_2)
+
+vec1 = [0] * len(el_1)
+vec2 = [0] * len(el_1)
+
+for i in range(len(el_1)):
+    vec1[i] = f1.count(el_1[i])
+    vec2[i] = f2.count(el_1[i])
+
+#dot product
+num = sum(i*j for i,j in zip(vec1,vec2))
+
+#magnitude
+d1 = sum(i**2 for i in vec1)**0.5
+d2 = sum(i**2 for i in vec2)**0.5
+
+cosine_similarity = math.acos(num/(d1*d2))
+
+print("Cosine similarity : ",cosine_similarity)
+              
+
+### 5 - HITS
+
+matrix=[[0,1,1,1],
+        [0,0,1,1],
+        [1,0,0,1],
+        [0,0,0,1]]
+k=2
+hub_score = [1] * len(matrix)
+auth_score = [0] * len(matrix)
+
+for i in range(k):
+    for j in range(len(matrix)):
+        for k in range(len(matrix)):
+            if matrix[j][k]==1:
+                auth_score[j] += hub_score[k]
+    sum_auth = sum(auth_score)
+
+    for j in range(len(matrix)):
+        auth_score[j] = auth_score[j]/sum_auth
+
+    for j in range(len(matrix)):
+        for k in range(len(matrix)):
+            if matrix[k][j]==1:
+                hub_score[j] += auth_score[k]
+    sum_hub = sum(hub_score)
+
+    for j in range(len(matrix)):
+        hub_score[j] = hub_score[j]/sum_hub
+
+print("authority score :",auth_score,4)
+print("hub score :",hub_score)
+print("sum of authority :",sum_auth)
+print("Sum of hub :",sum_hub)
+
+print("Maximum auth score is ",max(auth_score))
+print("Maximum hub score is ",max(hub_score))
+
+### 6 - character count   
+
+data = "Character count practical"
+
+def mapper(data):
+    char_count = {}
+    for char in data:
+        if char.isalpha():
+            char = char.lower()
+            if char in char_count:
+                char_count[char] += 1
+            else:
+                char_count[char] = 1
+    return char_count
+
+def reducer(data):
+    char_count = {}
+    for count_dic in data:
+        for char,count in count_dic.items():
+            if char in char_count:
+                char_count[char]+=count
+            else:
+                char_count[char]=count
+    return char_count
+
+mapped_data = [mapper(data)]
+print("Character count is as below :")
+reduced_data = reducer(mapped_data)  # Store the result
+print(reduced_data)
+    
+### 7 - stop word removal
+
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+
+#if not downloaded
+'''
+import nltk
+nltk.download('stopwords')
+nltk.download('punkt')
+'''
+
+stop_words=set(stopwords.words('english'))
+print(stop_words)
+
+filel=open("Text.txt")
+line=filel.read()
+words=line.split()
+for r in words:
+    if not r in stop_words:
+        appendFile=open('filteredtext.txt' , 'a')
+        appendFile.write(" "+r)
+        appendFile.close()
+
+
+### 8 - boolean 
+### 9 - vector 
+import numpy as np
+
+def create_vector(document, vocabulary):
+    vector = [document.lower().split().count(word) for word in vocabulary]
+    return vector
+
+def cosine_similarity(vec1, vec2):
+    dot_product = np.dot(vec1, vec2)
+    magnitude1 = np.sqrt(np.sum(np.square(vec1)))
+    magnitude2 = np.sqrt(np.sum(np.square(vec2)))
+    if magnitude1 == 0 or magnitude2 == 0:
+        return 0
+    return dot_product / (magnitude1 * magnitude2)
+
+def get_input_documents():
+    documents = {}
+    num_docs = int(input("How many documents would you like to pass? "))
+
+    for i in range(num_docs):
+        print(f"Input for Document {i + 1}:")
+        input_type = input("Enter '1' to input text directly or '2' to provide a file path: ")
+
+        if input_type == '1':
+            text = input("Enter the text for the document: ")
+            documents[f"Document {i + 1}"] = text
+        elif input_type == '2':
+            file_path = input("Enter the path to the text file: ")
+            with open(file_path, 'r') as file:
+                documents[f"Document {i + 1}"] = file.read()
+        else:
+            print("Invalid input. Please try again.")
+            return get_input_documents()
+
+    return documents
+
+def get_query():
+    input_type = input("Enter '1' to input query text directly or '2' to provide a file path: ")
+    
+    if input_type == '1':
+        query = input("Enter the query: ")
+    elif input_type == '2':
+        file_path = input("Enter the path to the query file: ")
+        with open(file_path, 'r') as file:
+            query = file.read()
+    else:
+        print("Invalid input. Please try again.")
+        return get_query()
+
+    return query
+
+
+documents = get_input_documents()
+query = get_query()
+
+vocabulary = sorted(set(" ".join(documents.values()).lower().split()))
+
+document_vectors = {doc: create_vector(text, vocabulary) for doc, text in documents.items()}
+query_vector = create_vector(query, vocabulary)
+
+similarity_scores = {doc: cosine_similarity(vector, query_vector) for doc, vector in document_vectors.items()}
+
+ranked_documents = sorted(similarity_scores.items(), key=lambda x: x[1], reverse=True)
+
+print("\nDocuments ranked by similarity to the query '{}':".format(query.strip()))
+for doc, score in ranked_documents:
+    print(f"{doc}: Similarity = {score:.3f}")
+
+
+### 10 - xml to csv
+import csv
+import xmltodict
+
+with open("employee.xml","r") as file:
+    filedata = file.read()
+
+data_dict = xmltodict.parse(filedata)
+emp_datalist = []
+for x in data_dict["employees"]["employee"]:
+    emp_datalist.append(dict(x))
+
+HEADERS = ['name','role','age']
+rows=[]
+
+for emp in emp_datalist:
+    name = emp["name"]
+    role = emp["role"]
+    age = emp["age"]
+    rows.append([name,role,age])
+
+with open('employee_data.csv','w',newline='') as f:
+    write = csv.writer(f)
+    write.writerow(HEADERS)
+    write.writerows(rows)
+
+#xml part:
+<employees>
+   <employee>
+      <name>Carolina</name>
+        <role>Data Engineer</role>
+        <age>24</age>
+    </employee>
+    <employee>
+      <name>Roosaka</name>
+        <role>Data Scientist</role>
+        <age>27</age>
+    </employee>
+    <employee>
+      <name>Kumar</name>
+        <role>Machine Learning Engineer</role>
+        <age>31</age>
+    </employee>
+    <employee>
+      <name>Vijay</name>
+        <role>Devops Engineer</role>
+        <age>26</age>
+    </employee>
+</employees>
+    
+
+### 11 - web crawler
+import time
+import requests
+from parsel import Selector
+
+start = time.time()
+response = requests.get("https://en.wikipedia.org/wiki/virat kohli")
+selector = Selector(response.text)
+
+href_links = selector.xpath("//a/@href").getall()
+img_links = selector.xpath("//img/@src").getall()
+
+print("--------------- href links --------------")
+print(href_links)
+
+print("--------------- img links --------------")
+print(img_links)
+
+end = time.time()
+print("Time reuqired in seconds :",end - start)
+
+
+        
+
+
